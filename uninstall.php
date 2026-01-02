@@ -20,9 +20,12 @@ delete_option('ileti_merkezi_enable_2fa');
 delete_option('ileti_merkezi_otp_length');
 delete_option('ileti_merkezi_otp_expiry');
 
-// Drop OTP table
+// Drop OTP table - validate table name before dropping
 $table_name = $wpdb->prefix . 'ileti_merkezi_otp';
-$wpdb->query("DROP TABLE IF EXISTS {$table_name}");
+// Ensure table name only contains valid characters
+if (preg_match('/^[a-zA-Z0-9_]+$/', $table_name)) {
+    $wpdb->query("DROP TABLE IF EXISTS `{$table_name}`");
+}
 
 // Delete user meta data (phone numbers)
 delete_metadata('user', 0, 'phone_number', '', true);

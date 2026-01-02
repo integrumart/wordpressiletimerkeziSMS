@@ -84,6 +84,11 @@ class Ileti_Merkezi_OTP {
      * @return string Random code
      */
     private function generate_random_code($length = 6) {
+        // Special case for single digit
+        if ($length === 1) {
+            return (string)wp_rand(0, 9);
+        }
+        
         $min = pow(10, $length - 1);
         $max = pow(10, $length) - 1;
         return (string)wp_rand($min, $max);
