@@ -136,11 +136,14 @@ class Ileti_Merkezi_OTP {
     public function cleanup_expired_otps() {
         global $wpdb;
         
-        $wpdb->query(
+        // Use prepared statement for security
+        $wpdb->query($wpdb->prepare(
             "DELETE FROM {$this->table_name} 
-            WHERE expires_at < NOW() 
-            OR is_used = 1"
-        );
+            WHERE expires_at < %s 
+            OR is_used = %d",
+            current_time('mysql'),
+            1
+        ));
     }
     
     /**

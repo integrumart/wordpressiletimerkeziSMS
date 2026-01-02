@@ -72,12 +72,15 @@ class Ileti_Merkezi_Auth {
             );
         }
         
-        // Store user ID in session for OTP verification
-        if (!session_id()) {
-            session_start();
-        }
-        $_SESSION['ileti_merkezi_pending_user_id'] = $user->ID;
-        $_SESSION['ileti_merkezi_pending_username'] = $username;
+        // Store user ID in transient for OTP verification (expires in 30 minutes)
+        $transient_key = 'ileti_merkezi_pending_' . wp_generate_password(20, false);
+        set_transient($transient_key, array(
+            'user_id' => $user->ID,
+            'username' => $username
+        ), 1800);
+        
+        // Store transient key in cookie for retrieval
+        setcookie('ileti_merkezi_transient', $transient_key, time() + 1800, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
         
         // Return error to prevent immediate login and show OTP form
         return new WP_Error(
@@ -105,12 +108,12 @@ class Ileti_Merkezi_Auth {
         // Verify OTP
         $otp_manager = Ileti_Merkezi_OTP::get_instance();
         if ($otp_manager->verify_otp($user_id, $otp_code)) {
-            // OTP is valid, clear session
-            if (!session_id()) {
-                session_start();
+            // OTP is valid, clear transient and cookie
+            if (isset($_COOKIE['ileti_merkezi_transient'])) {
+                $transient_key = sanitize_text_field($_COOKIE['ileti_merkezi_transient']);
+                delete_transient($transient_key);
+                setcookie('ileti_merkezi_transient', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
             }
-            unset($_SESSION['ileti_merkezi_pending_user_id']);
-            unset($_SESSION['ileti_merkezi_pending_username']);
             
             // Return user to complete login
             return $user;
@@ -127,16 +130,20 @@ class Ileti_Merkezi_Auth {
      * Display OTP verification form
      */
     public function display_otp_form() {
-        if (!session_id()) {
-            session_start();
-        }
-        
         // Only show OTP form if there's a pending verification
-        if (!isset($_SESSION['ileti_merkezi_pending_user_id'])) {
+        if (!isset($_COOKIE['ileti_merkezi_transient'])) {
             return;
         }
         
-        $user_id = $_SESSION['ileti_merkezi_pending_user_id'];
+        $transient_key = sanitize_text_field($_COOKIE['ileti_merkezi_transient']);
+        $pending_data = get_transient($transient_key);
+        
+        if (!$pending_data || !isset($pending_data['user_id'])) {
+            return;
+        }
+        
+        $user_id = $pending_data['user_id'];
+        $nonce = wp_create_nonce('ileti_merkezi_resend_' . $user_id);
         ?>
         <style>
             #ileti-merkezi-otp-form {
@@ -206,7 +213,7 @@ class Ileti_Merkezi_Auth {
                 </button>
             </p>
             <p style="text-align: center; margin-top: 15px;">
-                <a href="<?php echo esc_url(wp_login_url() . '?ileti_merkezi_resend=1'); ?>">
+                <a href="<?php echo esc_url(wp_login_url() . '?ileti_merkezi_resend=1&nonce=' . $nonce); ?>">
                     <?php _e('Resend verification code', 'ileti-merkezi-sms'); ?>
                 </a>
             </p>
@@ -218,21 +225,38 @@ class Ileti_Merkezi_Auth {
      * Handle OTP verification
      */
     public function handle_otp_verification() {
-        // Handle resend request
+        // Handle resend request with nonce verification
         if (isset($_GET['ileti_merkezi_resend']) && $_GET['ileti_merkezi_resend'] == '1') {
-            if (!session_id()) {
-                session_start();
+            if (!isset($_GET['nonce'])) {
+                return;
             }
             
-            if (isset($_SESSION['ileti_merkezi_pending_user_id'])) {
-                $user_id = $_SESSION['ileti_merkezi_pending_user_id'];
-                $otp_manager = Ileti_Merkezi_OTP::get_instance();
-                $otp_manager->send_otp($user_id);
-                
-                // Redirect back to login page
-                wp_redirect(wp_login_url());
-                exit;
+            // Get pending user data
+            if (!isset($_COOKIE['ileti_merkezi_transient'])) {
+                return;
             }
+            
+            $transient_key = sanitize_text_field($_COOKIE['ileti_merkezi_transient']);
+            $pending_data = get_transient($transient_key);
+            
+            if (!$pending_data || !isset($pending_data['user_id'])) {
+                return;
+            }
+            
+            $user_id = $pending_data['user_id'];
+            
+            // Verify nonce
+            if (!wp_verify_nonce($_GET['nonce'], 'ileti_merkezi_resend_' . $user_id)) {
+                return;
+            }
+            
+            // Resend OTP
+            $otp_manager = Ileti_Merkezi_OTP::get_instance();
+            $otp_manager->send_otp($user_id);
+            
+            // Redirect back to login page
+            wp_redirect(wp_login_url());
+            exit;
         }
         
         // Cleanup expired OTPs periodically

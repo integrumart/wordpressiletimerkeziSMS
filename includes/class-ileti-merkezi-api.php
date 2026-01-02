@@ -122,7 +122,7 @@ class Ileti_Merkezi_API {
         
         $receivers = $order->addChild('receivers');
         $receiver = $receivers->addChild('receiver');
-        $receiver->addChild('number', $phone);
+        $receiver->addChild('number', htmlspecialchars($phone));
         
         return $xml->asXML();
     }

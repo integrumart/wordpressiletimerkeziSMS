@@ -25,7 +25,8 @@ $table_name = $wpdb->prefix . 'ileti_merkezi_otp';
 $wpdb->query("DROP TABLE IF EXISTS {$table_name}");
 
 // Delete user meta data (phone numbers)
-$wpdb->query("DELETE FROM {$wpdb->usermeta} WHERE meta_key = 'phone_number'");
+delete_metadata('user', 0, 'phone_number', '', true);
+delete_metadata('user', 0, 'billing_phone', '', true);
 
 // Clear any cached data
 wp_cache_flush();
