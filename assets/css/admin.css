@@ -1,0 +1,49 @@
+/**
+ * Admin CSS for İleti Merkezi SMS Plugin
+ */
+
+.ileti-merkezi-settings-page {
+    max-width: 800px;
+}
+
+.ileti-merkezi-settings-page h1 {
+    margin-bottom: 20px;
+}
+
+.ileti-merkezi-settings-page .form-table th {
+    width: 200px;
+}
+
+.ileti-merkezi-test-sms {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.ileti-merkezi-test-sms h2 {
+    margin-top: 0;
+}
+
+.ileti-merkezi-notice {
+    margin: 20px 0;
+}
+
+.ileti-merkezi-notice.notice-success {
+    border-left-color: #46b450;
+}
+
+.ileti-merkezi-notice.notice-error {
+    border-left-color: #dc3232;
+}
+
+/* User profile phone field styling */
+.user-phone-number-wrap {
+    margin-top: 20px;
+}
+
+.user-phone-number-wrap .description {
+    color: #646970;
+    font-size: 13px;
+}

@@ -27,10 +27,28 @@ class Ileti_Merkezi_Admin {
     private function __construct() {
         add_action('admin_menu', array($this, 'add_admin_menu'));
         add_action('admin_init', array($this, 'register_settings'));
+        add_action('admin_enqueue_scripts', array($this, 'enqueue_admin_styles'));
         add_action('show_user_profile', array($this, 'add_phone_field'));
         add_action('edit_user_profile', array($this, 'add_phone_field'));
         add_action('personal_options_update', array($this, 'save_phone_field'));
         add_action('edit_user_profile_update', array($this, 'save_phone_field'));
+    }
+    
+    /**
+     * Enqueue admin styles
+     */
+    public function enqueue_admin_styles($hook) {
+        // Only load on our settings page
+        if ($hook != 'settings_page_ileti-merkezi-sms') {
+            return;
+        }
+        
+        wp_enqueue_style(
+            'ileti-merkezi-admin',
+            ILETI_MERKEZI_SMS_PLUGIN_URL . 'assets/css/admin.css',
+            array(),
+            ILETI_MERKEZI_SMS_VERSION
+        );
     }
     
     /**
@@ -163,7 +181,7 @@ class Ileti_Merkezi_Admin {
             $this->handle_test_sms();
         }
         ?>
-        <div class="wrap">
+        <div class="wrap ileti-merkezi-settings-page">
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
             
             <form action="options.php" method="post">
