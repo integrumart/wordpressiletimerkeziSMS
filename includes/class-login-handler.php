@@ -202,36 +202,6 @@ class IMSMS_Login_Handler {
                 <?php endif; ?>
             </div>
         </div>
-        
-        <script>
-        (function() {
-            var timer = document.querySelector('.imsms-otp-timer');
-            if (!timer) return;
-            
-            var remaining = parseInt(timer.getAttribute('data-expiry'));
-            
-            function formatTime(seconds) {
-                var mins = Math.floor(seconds / 60);
-                var secs = seconds % 60;
-                return mins + ':' + (secs < 10 ? '0' : '') + secs;
-            }
-            
-            function updateTimer() {
-                remaining--;
-                if (remaining <= 0) {
-                    timer.textContent = '0:00';
-                    timer.style.color = '#d63638';
-                    return;
-                }
-                timer.textContent = formatTime(remaining);
-                setTimeout(updateTimer, 1000);
-            }
-            
-            if (remaining > 0) {
-                setTimeout(updateTimer, 1000);
-            }
-        })();
-        </script>
         <?php
     }
     
@@ -333,6 +303,14 @@ class IMSMS_Login_Handler {
             IMSMS_PLUGIN_URL . 'assets/css/login.css',
             array(),
             IMSMS_VERSION
+        );
+        
+        wp_enqueue_script(
+            'imsms-otp-timer',
+            IMSMS_PLUGIN_URL . 'assets/js/otp-timer.js',
+            array(),
+            IMSMS_VERSION,
+            true
         );
     }
 }
