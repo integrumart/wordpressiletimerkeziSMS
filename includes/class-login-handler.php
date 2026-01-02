@@ -49,42 +49,28 @@ class IMSMS_Login_Handler {
      * @param int $expiry Expiry time in seconds
      */
     private function set_login_token_cookie($token, $expiry) {
-        $options = array(
+        setcookie('imsms_login_token', $token, array(
             'expires' => time() + $expiry,
             'path' => COOKIEPATH,
             'domain' => COOKIE_DOMAIN,
             'secure' => is_ssl(),
             'httponly' => true,
             'samesite' => 'Strict'
-        );
-        
-        if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
-            setcookie('imsms_login_token', $token, $options);
-        } else {
-            // Fallback for PHP < 7.3
-            setcookie('imsms_login_token', $token, $options['expires'], $options['path'], $options['domain'], $options['secure'], $options['httponly']);
-        }
+        ));
     }
     
     /**
      * Clear login token cookie
      */
     private function clear_login_token_cookie() {
-        $options = array(
+        setcookie('imsms_login_token', '', array(
             'expires' => time() - 3600,
             'path' => COOKIEPATH,
             'domain' => COOKIE_DOMAIN,
             'secure' => is_ssl(),
             'httponly' => true,
             'samesite' => 'Strict'
-        );
-        
-        if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
-            setcookie('imsms_login_token', '', $options);
-        } else {
-            // Fallback for PHP < 7.3
-            setcookie('imsms_login_token', '', $options['expires'], $options['path'], $options['domain'], $options['secure'], $options['httponly']);
-        }
+        ));
     }
     
     /**
@@ -176,43 +162,6 @@ class IMSMS_Login_Handler {
         $max_attempts = 3;
         
         ?>
-        <style>
-            .imsms-otp-container {
-                margin: 20px 0;
-                padding: 15px;
-                background: #f0f0f1;
-                border-radius: 4px;
-            }
-            .imsms-otp-container label {
-                display: block;
-                margin-bottom: 5px;
-                font-weight: 600;
-            }
-            .imsms-otp-container input[type="text"] {
-                width: 100%;
-                padding: 8px;
-                font-size: 24px;
-                letter-spacing: 10px;
-                text-align: center;
-                border: 2px solid #2271b1;
-                border-radius: 4px;
-                margin-bottom: 10px;
-            }
-            .imsms-otp-info {
-                font-size: 12px;
-                color: #666;
-                margin-top: 5px;
-            }
-            .imsms-otp-timer {
-                color: #d63638;
-                font-weight: 600;
-            }
-            .imsms-otp-attempts {
-                color: #d63638;
-                font-weight: 600;
-            }
-        </style>
-        
         <div class="imsms-otp-container">
             <label for="imsms_otp_code">
                 <?php esc_html_e('Verification Code', 'ileti-merkezi-sms'); ?>

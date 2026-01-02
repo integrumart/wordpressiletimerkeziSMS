@@ -90,10 +90,21 @@ class Ileti_Merkezi_SMS {
      * Plugin deactivation
      */
     public function deactivate() {
-        // Clean up temporary OTP data
+        // Clean up temporary OTP data using WordPress transient API
         global $wpdb;
-        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_imsms_otp_%'");
-        $wpdb->query("DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_timeout_imsms_otp_%'");
+        
+        // Properly escape the LIKE pattern
+        $pattern1 = $wpdb->esc_like('_transient_imsms_otp_') . '%';
+        $pattern2 = $wpdb->esc_like('_transient_timeout_imsms_otp_') . '%';
+        
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+            $pattern1
+        ));
+        $wpdb->query($wpdb->prepare(
+            "DELETE FROM {$wpdb->options} WHERE option_name LIKE %s",
+            $pattern2
+        ));
         
         // Flush rewrite rules
         flush_rewrite_rules();

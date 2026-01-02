@@ -80,12 +80,13 @@ class IMSMS_Ileti_Merkezi_API {
         // Clean phone number (remove non-numeric characters)
         $phone = preg_replace('/[^0-9]/', '', $phone);
         
-        // Ensure phone number starts with country code
-        if (substr($phone, 0, 1) !== '9') {
-            // Assume Turkish number if not starts with country code
+        // Ensure phone number starts with country code (90 for Turkey)
+        if (substr($phone, 0, 2) !== '90') {
+            // If starts with 0, remove it and add country code
             if (substr($phone, 0, 1) === '0') {
                 $phone = '90' . substr($phone, 1);
             } else {
+                // Assume it's a Turkish number without country code
                 $phone = '90' . $phone;
             }
         }
