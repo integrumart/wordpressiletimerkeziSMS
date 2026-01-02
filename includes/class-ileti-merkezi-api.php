@@ -102,9 +102,9 @@ class IMSMS_Ileti_Merkezi_API {
         <sendDateTime></sendDateTime>
         <message>
             <text>' . htmlspecialchars($message, ENT_XML1, 'UTF-8') . '</text>
-            <receipents>
+            <recipients>
                 <number>' . htmlspecialchars($phone, ENT_XML1, 'UTF-8') . '</number>
-            </receipents>
+            </recipients>
         </message>
     </order>
 </request>';

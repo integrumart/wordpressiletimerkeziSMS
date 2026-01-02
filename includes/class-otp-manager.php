@@ -85,7 +85,7 @@ class IMSMS_OTP_Manager {
         $stored_data['attempts'] = isset($stored_data['attempts']) ? $stored_data['attempts'] + 1 : 1;
         
         // Verify OTP
-        if (isset($stored_data['otp']) && wp_check_password($otp, $stored_data['otp'])) {
+        if (isset($stored_data['otp']) && hash_equals($stored_data['otp'], wp_hash($otp))) {
             // Valid OTP - delete it
             $this->delete_otp($user_id);
             return true;
