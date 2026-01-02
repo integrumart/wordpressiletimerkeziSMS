@@ -1,0 +1,41 @@
+/* Login Page Styles for İleti Merkezi SMS Plugin */
+
+.imsms-otp-container {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f0f0f1;
+    border-radius: 4px;
+}
+
+.imsms-otp-container label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.imsms-otp-container input[type="text"] {
+    width: 100%;
+    padding: 8px;
+    font-size: 24px;
+    letter-spacing: 10px;
+    text-align: center;
+    border: 2px solid #2271b1;
+    border-radius: 4px;
+    margin-bottom: 10px;
+}
+
+.imsms-otp-info {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+}
+
+.imsms-otp-timer {
+    color: #d63638;
+    font-weight: 600;
+}
+
+.imsms-otp-attempts {
+    color: #d63638;
+    font-weight: 600;
+}
