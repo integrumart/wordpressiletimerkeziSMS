@@ -1,0 +1,64 @@
+/* Admin Settings Styles */
+.imsms-admin-section {
+    margin: 20px 0;
+}
+
+.imsms-admin-section h2 {
+    color: #2271b1;
+    font-size: 18px;
+    margin-bottom: 10px;
+}
+
+.imsms-test-result {
+    margin: 15px 0;
+    padding: 10px;
+    border-left: 4px solid #00a32a;
+    background: #f0f6fc;
+}
+
+.imsms-test-result.error {
+    border-left-color: #d63638;
+    background: #fcf0f1;
+}
+
+.imsms-instructions {
+    background: #f0f6fc;
+    border: 1px solid #c3e6f5;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.imsms-instructions h3 {
+    margin-top: 0;
+    color: #2271b1;
+}
+
+.imsms-instructions ol {
+    margin-left: 20px;
+}
+
+.imsms-instructions li {
+    margin-bottom: 8px;
+}
+
+/* Form styling */
+.form-table th {
+    font-weight: 600;
+}
+
+.form-table td input[type="text"],
+.form-table td input[type="password"] {
+    width: 100%;
+    max-width: 400px;
+}
+
+.form-table td .description {
+    font-style: italic;
+    color: #646970;
+}
+
+/* Button styling */
+.button-secondary.imsms-test-button {
+    margin-top: 10px;
+}
