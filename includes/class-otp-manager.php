@@ -35,8 +35,14 @@ class IMSMS_OTP_Manager {
         $otp_length = get_option('imsms_otp_length', $length);
         $otp = '';
         
+        // Use random_int for better cryptographic security
         for ($i = 0; $i < $otp_length; $i++) {
-            $otp .= wp_rand(0, 9);
+            try {
+                $otp .= random_int(0, 9);
+            } catch (Exception $e) {
+                // Fallback to wp_rand if random_int fails
+                $otp .= wp_rand(0, 9);
+            }
         }
         
         return $otp;

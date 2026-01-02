@@ -110,8 +110,6 @@ class IMSMS_Ileti_Merkezi_API {
         $order = $xml->addChild('order');
         $order->addChild('sender', $this->sender);
         
-        $message_node = $order->addChild('sendDateTime');
-        
         $receivers = $order->addChild('receivers');
         $receiver = $receivers->addChild('receiver');
         $receiver->addChild('number', $phone);

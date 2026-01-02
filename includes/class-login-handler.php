@@ -38,6 +38,15 @@ class IMSMS_Login_Handler {
     }
     
     /**
+     * Ensure session is started
+     */
+    private function ensure_session_started() {
+        if (!session_id()) {
+            session_start();
+        }
+    }
+    
+    /**
      * Intercept authentication process
      * 
      * @param WP_User|WP_Error|null $user User object or error
@@ -62,6 +71,7 @@ class IMSMS_Login_Handler {
         }
         
         // Skip if already verified in this session
+        $this->ensure_session_started();
         if (isset($_SESSION['imsms_verified_' . $user->ID]) && $_SESSION['imsms_verified_' . $user->ID] === true) {
             unset($_SESSION['imsms_verified_' . $user->ID]);
             return $user;
@@ -91,9 +101,7 @@ class IMSMS_Login_Handler {
         }
         
         // Store user ID in session for OTP verification
-        if (!session_id()) {
-            session_start();
-        }
+        $this->ensure_session_started();
         $_SESSION['imsms_pending_user_id'] = $user->ID;
         $_SESSION['imsms_pending_username'] = $username;
         
@@ -105,9 +113,7 @@ class IMSMS_Login_Handler {
      * Render OTP verification form
      */
     public function render_otp_form() {
-        if (!session_id()) {
-            session_start();
-        }
+        $this->ensure_session_started();
         
         // Only show OTP form if there's a pending verification
         if (!isset($_SESSION['imsms_pending_user_id'])) {
@@ -176,9 +182,7 @@ class IMSMS_Login_Handler {
             return;
         }
         
-        if (!session_id()) {
-            session_start();
-        }
+        $this->ensure_session_started();
         
         $user_id = intval($_POST['imsms_user_id']);
         $otp_code = sanitize_text_field($_POST['imsms_otp_code']);
@@ -203,8 +207,11 @@ class IMSMS_Login_Handler {
                 wp_set_current_user($user_id);
                 wp_set_auth_cookie($user_id, true);
                 
-                // Redirect to admin or intended page
-                $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : admin_url();
+                // Redirect to admin or intended page with proper validation
+                $redirect_to = admin_url();
+                if (isset($_REQUEST['redirect_to'])) {
+                    $redirect_to = wp_validate_redirect($_REQUEST['redirect_to'], $redirect_to);
+                }
                 wp_safe_redirect($redirect_to);
                 exit;
             }
@@ -231,9 +238,7 @@ class IMSMS_Login_Handler {
      * Enqueue login page styles
      */
     public function enqueue_login_styles() {
-        if (!session_id()) {
-            session_start();
-        }
+        $this->ensure_session_started();
         
         if (isset($_SESSION['imsms_pending_user_id'])) {
             wp_enqueue_style('imsms-login', IMSMS_PLUGIN_URL . 'assets/css/login.css', array(), IMSMS_VERSION);
