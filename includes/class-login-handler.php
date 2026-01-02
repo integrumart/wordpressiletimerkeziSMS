@@ -43,6 +43,51 @@ class IMSMS_Login_Handler {
     }
     
     /**
+     * Set login token cookie
+     *
+     * @param string $token Token value
+     * @param int $expiry Expiry time in seconds
+     */
+    private function set_login_token_cookie($token, $expiry) {
+        $options = array(
+            'expires' => time() + $expiry,
+            'path' => COOKIEPATH,
+            'domain' => COOKIE_DOMAIN,
+            'secure' => is_ssl(),
+            'httponly' => true,
+            'samesite' => 'Strict'
+        );
+        
+        if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
+            setcookie('imsms_login_token', $token, $options);
+        } else {
+            // Fallback for PHP < 7.3
+            setcookie('imsms_login_token', $token, $options['expires'], $options['path'], $options['domain'], $options['secure'], $options['httponly']);
+        }
+    }
+    
+    /**
+     * Clear login token cookie
+     */
+    private function clear_login_token_cookie() {
+        $options = array(
+            'expires' => time() - 3600,
+            'path' => COOKIEPATH,
+            'domain' => COOKIE_DOMAIN,
+            'secure' => is_ssl(),
+            'httponly' => true,
+            'samesite' => 'Strict'
+        );
+        
+        if (version_compare(PHP_VERSION, '7.3.0', '>=')) {
+            setcookie('imsms_login_token', '', $options);
+        } else {
+            // Fallback for PHP < 7.3
+            setcookie('imsms_login_token', '', $options['expires'], $options['path'], $options['domain'], $options['secure'], $options['httponly']);
+        }
+    }
+    
+    /**
      * Intercept authentication
      *
      * @param WP_User|WP_Error|null $user User object or error
@@ -79,7 +124,7 @@ class IMSMS_Login_Handler {
                 ), $expiry);
                 
                 // Store token in cookie for verification
-                setcookie('imsms_login_token', $token, time() + $expiry, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
+                $this->set_login_token_cookie($token, $expiry);
                 
                 // Return error to prevent login and show OTP form
                 return new WP_Error(
@@ -112,7 +157,7 @@ class IMSMS_Login_Handler {
         
         if ($login_data === false) {
             // Token expired or invalid
-            setcookie('imsms_login_token', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN);
+            $this->clear_login_token_cookie();
             return;
         }
         
@@ -122,7 +167,7 @@ class IMSMS_Login_Handler {
         // Check if OTP exists
         if (!$otp_manager->has_otp($user_id)) {
             delete_transient('imsms_pending_login_' . $token);
-            setcookie('imsms_login_token', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN);
+            $this->clear_login_token_cookie();
             return;
         }
         
@@ -279,7 +324,7 @@ class IMSMS_Login_Handler {
             if ($user) {
                 // Clear transient and cookie
                 delete_transient('imsms_pending_login_' . $token);
-                setcookie('imsms_login_token', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN);
+                $this->clear_login_token_cookie();
                 
                 // Set authentication cookies
                 wp_set_auth_cookie($user_id, isset($_POST['rememberme']));
@@ -294,14 +339,22 @@ class IMSMS_Login_Handler {
             }
         } else {
             // Invalid OTP - add error
-            add_filter('wp_login_errors', function($errors) {
-                $errors->add(
-                    'imsms_invalid_otp',
-                    __('Invalid verification code. Please try again.', 'ileti-merkezi-sms')
-                );
-                return $errors;
-            });
+            add_filter('wp_login_errors', array($this, 'add_invalid_otp_error'));
         }
+    }
+    
+    /**
+     * Add invalid OTP error message
+     *
+     * @param WP_Error $errors Login errors object
+     * @return WP_Error
+     */
+    public function add_invalid_otp_error($errors) {
+        $errors->add(
+            'imsms_invalid_otp',
+            __('Invalid verification code. Please try again.', 'ileti-merkezi-sms')
+        );
+        return $errors;
     }
     
     /**

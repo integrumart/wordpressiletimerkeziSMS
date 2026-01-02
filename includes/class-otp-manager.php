@@ -185,7 +185,12 @@ class IMSMS_OTP_Manager {
         
         // Store OTP
         $expiry = absint(get_option('imsms_otp_expiry', 300));
-        $this->store_otp($user->ID, $otp, $expiry);
+        if (!$this->store_otp($user->ID, $otp, $expiry)) {
+            return array(
+                'success' => false,
+                'message' => __('Failed to store verification code. Please try again.', 'ileti-merkezi-sms')
+            );
+        }
         
         // Prepare SMS message
         $message = sprintf(

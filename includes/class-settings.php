@@ -255,7 +255,7 @@ class IMSMS_Settings {
             <h1><?php echo esc_html(get_admin_page_title()); ?></h1>
             
             <?php if ($test_result): ?>
-                <div class="notice notice-<?php echo $test_result['success'] ? 'success' : 'error'; ?> is-dismissible">
+                <div class="notice notice-<?php echo esc_attr($test_result['success'] ? 'success' : 'error'); ?> is-dismissible">
                     <p><?php echo esc_html($test_result['message']); ?></p>
                 </div>
             <?php endif; ?>
