@@ -226,6 +226,7 @@ class IMSMS_Login_Handler {
                    required 
                    autofocus />
             <input type="hidden" name="imsms_otp_verification" value="1" />
+            <?php wp_nonce_field('imsms_otp_verify', 'imsms_otp_nonce'); ?>
             
             <div class="imsms-otp-info">
                 <p>
@@ -291,6 +292,11 @@ class IMSMS_Login_Handler {
     public function handle_otp_verification() {
         // Check if this is OTP verification request
         if (!isset($_POST['imsms_otp_verification']) || $_POST['imsms_otp_verification'] !== '1') {
+            return;
+        }
+        
+        // Verify nonce
+        if (!isset($_POST['imsms_otp_nonce']) || !wp_verify_nonce($_POST['imsms_otp_nonce'], 'imsms_otp_verify')) {
             return;
         }
         

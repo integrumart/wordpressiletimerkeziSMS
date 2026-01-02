@@ -278,7 +278,7 @@ class IMSMS_Settings {
                            value="<?php esc_attr_e('Test Connection', 'ileti-merkezi-sms'); ?>" />
                 </p>
                 <p class="description">
-                    <?php esc_html_e('This will send a test SMS to the number 905551234567.', 'ileti-merkezi-sms'); ?>
+                    <?php esc_html_e('This will send a test SMS to the number 905551234567. Make sure to save your settings before testing.', 'ileti-merkezi-sms'); ?>
                 </p>
             </form>
         </div>

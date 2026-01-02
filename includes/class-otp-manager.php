@@ -47,6 +47,11 @@ class IMSMS_OTP_Manager {
      * @return bool Success
      */
     public function store_otp($user_id, $otp, $expiry = 300) {
+        $user_id = absint($user_id);
+        if ($user_id === 0) {
+            return false;
+        }
+        
         $expiry = absint($expiry);
         if ($expiry < 60) {
             $expiry = 60;
@@ -69,6 +74,11 @@ class IMSMS_OTP_Manager {
      * @return bool True if valid, false otherwise
      */
     public function verify_otp($user_id, $otp) {
+        $user_id = absint($user_id);
+        if ($user_id === 0) {
+            return false;
+        }
+        
         $stored_data = get_transient('imsms_otp_' . $user_id);
         
         if ($stored_data === false) {
@@ -107,6 +117,11 @@ class IMSMS_OTP_Manager {
      * @return bool Success
      */
     public function delete_otp($user_id) {
+        $user_id = absint($user_id);
+        if ($user_id === 0) {
+            return false;
+        }
+        
         return delete_transient('imsms_otp_' . $user_id);
     }
     
@@ -117,6 +132,11 @@ class IMSMS_OTP_Manager {
      * @return bool True if OTP exists
      */
     public function has_otp($user_id) {
+        $user_id = absint($user_id);
+        if ($user_id === 0) {
+            return false;
+        }
+        
         return get_transient('imsms_otp_' . $user_id) !== false;
     }
     
@@ -127,6 +147,11 @@ class IMSMS_OTP_Manager {
      * @return int Remaining seconds or 0
      */
     public function get_remaining_expiry($user_id) {
+        $user_id = absint($user_id);
+        if ($user_id === 0) {
+            return 0;
+        }
+        
         $timeout = get_option('_transient_timeout_imsms_otp_' . $user_id);
         if ($timeout === false) {
             return 0;
@@ -143,6 +168,11 @@ class IMSMS_OTP_Manager {
      * @return int Attempts count
      */
     public function get_attempts($user_id) {
+        $user_id = absint($user_id);
+        if ($user_id === 0) {
+            return 0;
+        }
+        
         $stored_data = get_transient('imsms_otp_' . $user_id);
         
         if ($stored_data === false) {
