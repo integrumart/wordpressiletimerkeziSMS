@@ -22,6 +22,7 @@ define('IMSMS_VERSION', '1.0.0');
 define('IMSMS_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('IMSMS_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('IMSMS_PLUGIN_BASENAME', plugin_basename(__FILE__));
+define('IMSMS_TEST_PHONE_NUMBER', '905551234567'); // Default test phone number
 
 // Include required files
 require_once IMSMS_PLUGIN_DIR . 'includes/class-ileti-merkezi-api.php';
@@ -81,6 +82,7 @@ class Ileti_Merkezi_SMS {
         add_option('imsms_2fa_enabled', '1');
         add_option('imsms_otp_length', '6');
         add_option('imsms_otp_expiry', '300'); // 5 minutes
+        add_option('imsms_test_phone', IMSMS_TEST_PHONE_NUMBER);
         
         // Flush rewrite rules
         flush_rewrite_rules();

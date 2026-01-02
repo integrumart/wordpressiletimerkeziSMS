@@ -91,6 +91,12 @@ class IMSMS_Settings {
             'default' => 300
         ));
         
+        register_setting('imsms_settings', 'imsms_test_phone', array(
+            'type' => 'string',
+            'sanitize_callback' => 'sanitize_text_field',
+            'default' => IMSMS_TEST_PHONE_NUMBER
+        ));
+        
         // Add settings sections
         add_settings_section(
             'imsms_api_section',
@@ -160,6 +166,15 @@ class IMSMS_Settings {
             'imsms_2fa_section',
             array('field' => 'imsms_otp_expiry', 'min' => 60, 'max' => 600)
         );
+        
+        add_settings_field(
+            'imsms_test_phone',
+            __('Test Phone Number', 'ileti-merkezi-sms'),
+            array($this, 'render_text_field'),
+            'ileti-merkezi-sms',
+            'imsms_api_section',
+            array('field' => 'imsms_test_phone', 'type' => 'text', 'description' => __('Phone number to use for API connection testing', 'ileti-merkezi-sms'))
+        );
     }
     
     /**
@@ -190,6 +205,7 @@ class IMSMS_Settings {
         $field = $args['field'];
         $type = isset($args['type']) ? $args['type'] : 'text';
         $value = get_option($field, '');
+        $description = isset($args['description']) ? $args['description'] : '';
         
         printf(
             '<input type="%s" name="%s" id="%s" value="%s" class="regular-text" />',
@@ -198,6 +214,10 @@ class IMSMS_Settings {
             esc_attr($field),
             esc_attr($value)
         );
+        
+        if ($description) {
+            printf('<p class="description">%s</p>', esc_html($description));
+        }
     }
     
     /**
@@ -278,7 +298,13 @@ class IMSMS_Settings {
                            value="<?php esc_attr_e('Test Connection', 'ileti-merkezi-sms'); ?>" />
                 </p>
                 <p class="description">
-                    <?php esc_html_e('This will send a test SMS to the number 905551234567. Make sure to save your settings before testing.', 'ileti-merkezi-sms'); ?>
+                    <?php 
+                    $test_phone = get_option('imsms_test_phone', IMSMS_TEST_PHONE_NUMBER);
+                    printf(
+                        esc_html__('This will send a test SMS to the configured test phone number (%s). Make sure to save your settings before testing.', 'ileti-merkezi-sms'),
+                        esc_html($test_phone)
+                    );
+                    ?>
                 </p>
             </form>
         </div>

@@ -179,6 +179,7 @@ class IMSMS_Ileti_Merkezi_API {
      * @return array Response with 'success' and 'message' keys
      */
     public function test_connection() {
-        return $this->send_sms('905551234567', 'Test message from WordPress');
+        $test_phone = get_option('imsms_test_phone', IMSMS_TEST_PHONE_NUMBER);
+        return $this->send_sms($test_phone, 'Test message from WordPress');
     }
 }

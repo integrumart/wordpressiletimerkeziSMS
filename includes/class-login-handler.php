@@ -254,8 +254,9 @@ class IMSMS_Login_Handler {
                 // Set authentication cookies
                 wp_set_auth_cookie($user_id, isset($_POST['rememberme']));
                 
-                // Determine redirect URL
-                $redirect_to = isset($_REQUEST['redirect_to']) ? $_REQUEST['redirect_to'] : admin_url();
+                // Determine redirect URL with validation
+                $redirect_to = isset($_REQUEST['redirect_to']) ? wp_unslash($_REQUEST['redirect_to']) : admin_url();
+                $redirect_to = wp_validate_redirect($redirect_to, admin_url());
                 $redirect_to = apply_filters('login_redirect', $redirect_to, $redirect_to, $user);
                 
                 // Redirect
