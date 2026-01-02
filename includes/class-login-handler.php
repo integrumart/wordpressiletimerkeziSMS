@@ -68,12 +68,18 @@ class IMSMS_Login_Handler {
             $result = $otp_manager->send_otp_to_user($user);
             
             if ($result['success']) {
-                // Store user ID in session for OTP verification
-                if (!session_id()) {
-                    session_start();
-                }
-                $_SESSION['imsms_pending_user_id'] = $user->ID;
-                $_SESSION['imsms_pending_username'] = $username;
+                // Generate a unique token for this login attempt
+                $token = wp_generate_password(32, false);
+                
+                // Store user ID with token for OTP verification (valid for OTP expiry time)
+                $expiry = absint(get_option('imsms_otp_expiry', 300));
+                set_transient('imsms_pending_login_' . $token, array(
+                    'user_id' => $user->ID,
+                    'username' => $username
+                ), $expiry);
+                
+                // Store token in cookie for verification
+                setcookie('imsms_login_token', $token, time() + $expiry, COOKIEPATH, COOKIE_DOMAIN, is_ssl(), true);
                 
                 // Return error to prevent login and show OTP form
                 return new WP_Error(
@@ -96,22 +102,27 @@ class IMSMS_Login_Handler {
      * Render OTP form
      */
     public function render_otp_form() {
-        if (!session_id()) {
-            session_start();
-        }
-        
         // Check if OTP verification is pending
-        if (!isset($_SESSION['imsms_pending_user_id'])) {
+        if (!isset($_COOKIE['imsms_login_token'])) {
             return;
         }
         
-        $user_id = absint($_SESSION['imsms_pending_user_id']);
+        $token = sanitize_text_field($_COOKIE['imsms_login_token']);
+        $login_data = get_transient('imsms_pending_login_' . $token);
+        
+        if ($login_data === false) {
+            // Token expired or invalid
+            setcookie('imsms_login_token', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN);
+            return;
+        }
+        
+        $user_id = absint($login_data['user_id']);
         $otp_manager = new IMSMS_OTP_Manager();
         
         // Check if OTP exists
         if (!$otp_manager->has_otp($user_id)) {
-            unset($_SESSION['imsms_pending_user_id']);
-            unset($_SESSION['imsms_pending_username']);
+            delete_transient('imsms_pending_login_' . $token);
+            setcookie('imsms_login_token', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN);
             return;
         }
         
@@ -243,16 +254,19 @@ class IMSMS_Login_Handler {
             return;
         }
         
-        if (!session_id()) {
-            session_start();
-        }
-        
-        // Check if pending user ID exists
-        if (!isset($_SESSION['imsms_pending_user_id'])) {
+        // Check if pending login token exists
+        if (!isset($_COOKIE['imsms_login_token'])) {
             return;
         }
         
-        $user_id = absint($_SESSION['imsms_pending_user_id']);
+        $token = sanitize_text_field($_COOKIE['imsms_login_token']);
+        $login_data = get_transient('imsms_pending_login_' . $token);
+        
+        if ($login_data === false) {
+            return;
+        }
+        
+        $user_id = absint($login_data['user_id']);
         $otp_code = isset($_POST['imsms_otp_code']) ? sanitize_text_field($_POST['imsms_otp_code']) : '';
         
         // Verify OTP
@@ -263,9 +277,9 @@ class IMSMS_Login_Handler {
             $user = get_user_by('id', $user_id);
             
             if ($user) {
-                // Clear session data
-                unset($_SESSION['imsms_pending_user_id']);
-                unset($_SESSION['imsms_pending_username']);
+                // Clear transient and cookie
+                delete_transient('imsms_pending_login_' . $token);
+                setcookie('imsms_login_token', '', time() - 3600, COOKIEPATH, COOKIE_DOMAIN);
                 
                 // Set authentication cookies
                 wp_set_auth_cookie($user_id, isset($_POST['rememberme']));
